@@ -38,7 +38,7 @@ require_once 'PHP+DB.php'; // 예: includes/db.php 경로에 DB 연결 코드가
     <h3>📝 글 목록</h3>
     <?php
     try {
-        $sql = "SELECT post_id, post_title, created_at FROM posts ORDER BY created_at DESC";
+        $sql = "SELECT post_id, post_title, created_at FROM post ORDER BY created_at DESC";
         $stmt = $pdo->query($sql);
 
         while ($row = $stmt->fetch()) {

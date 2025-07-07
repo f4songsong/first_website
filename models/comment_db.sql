@@ -10,6 +10,6 @@ CREATE TABLE `comment` (
   `deleted_at` datetime DEFAULT NULL,
   FOREIGN KEY (`users_id`) REFERENCES `users` (`users_id`),
   FOREIGN KEY (`post_id`) REFERENCES `post` (`post_id`),
-  FOREIGN KEY (`content_id`) REFERENCES `content` (`content`),
+  FOREIGN KEY (`content_id`) REFERENCES `content` (`content_id`),
   PRIMARY KEY (`comment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;

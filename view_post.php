@@ -1,13 +1,13 @@
 <?php
+// 세션 시작 및 DB 연결
 session_start();
 require_once 'PHP+DB.php';
 
-// 1. URL 파라미터 'id' 검사
+// 1. URL 파라미터 검사
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     echo "잘못된 접근입니다.";
     exit;
 }
-
 $post_id = (int)$_GET['id'];
 
 try {
@@ -21,8 +21,13 @@ try {
         exit;
     }
 
-    // 3. content 테이블에서 본문 내용 가져오기 (block_type='text'만)
-    $stmt2 = $pdo->prepare("SELECT content FROM content WHERE post_id = ? AND block_type = 'text' ORDER BY content_id ASC");
+    // 3. content 테이블에서 block_type='text'인 본문만 가져오기
+    $stmt2 = $pdo->prepare("
+        SELECT content 
+        FROM content 
+        WHERE post_id = ? AND block_type = 'text' 
+        ORDER BY content_id ASC
+    ");
     $stmt2->execute([$post_id]);
     $contents = $stmt2->fetchAll();
 
@@ -33,14 +38,17 @@ try {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($post['post_title']); ?></title>
 </head>
 <body>
+
+    <!-- 글 제목 -->
     <h2><?php echo htmlspecialchars($post['post_title']); ?></h2>
 
+    <!-- 본문 내용 출력 -->
     <?php if ($contents): ?>
         <?php foreach ($contents as $content): ?>
             <p><?php echo nl2br(htmlspecialchars($content['content'])); ?></p>
@@ -50,5 +58,71 @@ try {
     <?php endif; ?>
 
     <p><a href="index.php">← 목록으로 돌아가기</a></p>
+
+    <!-- 댓글 작성 폼 -->
+    <h3>💬 댓글 작성</h3>
+    <form id="comment-form">
+        <textarea name="comment" rows="4" cols="50" placeholder="댓글을 입력하세요..." required></textarea>
+        <input type="hidden" name="post_id" value="<?php echo $post_id; ?>">
+        <p><button type="submit">댓글 작성</button></p>
+    </form>
+
+    <p id="comment-message"></p>
+
+    <!-- 댓글 목록 출력 -->
+    <h3>🗨️ 댓글 목록</h3>
+    <?php
+    try {
+        $stmt = $pdo->prepare("
+            SELECT c.content, c.created_at, u.users_name
+            FROM comment c
+            JOIN users u ON c.users_id = u.users_id
+            WHERE c.post_id = ? AND c.deleted_at IS NULL
+            ORDER BY c.created_at ASC
+        ");
+        $stmt->execute([$post_id]);
+        $comments = $stmt->fetchAll();
+
+        if ($comments):
+            foreach ($comments as $comment):
+    ?>
+                <p>
+                    <strong><?php echo htmlspecialchars($comment['users_name']); ?></strong>: 
+                    <?php echo nl2br(htmlspecialchars($comment['content'])); ?>
+                    <small>(<?php echo $comment['created_at']; ?>)</small>
+                </p>
+    <?php
+            endforeach;
+        else:
+            echo "<p>작성된 댓글이 없습니다.</p>";
+        endif;
+    } catch (PDOException $e) {
+        echo "<p>❌ 댓글을 불러오는 데 실패했습니다: " . htmlspecialchars($e->getMessage()) . "</p>";
+    }
+    ?>
+
+    <!-- 댓글 비동기 처리 -->
+    <script>
+    document.getElementById('comment-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const response = await fetch('comment.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        const msg = document.getElementById('comment-message');
+        msg.textContent = result.message;
+        msg.style.color = result.success ? 'green' : 'red';
+
+        if (result.success) {
+            this.comment.value = '';
+            location.reload(); // 새로고침으로 댓글 목록 반영
+        }
+    });
+    </script>
+
 </body>
 </html>

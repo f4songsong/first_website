@@ -58,7 +58,23 @@ try {
     <?php endif; ?>
 
     <p><a href="index.php">← 목록으로 돌아가기</a></p>
+    <!---->
+    <h3>📎 첨부 파일</h3>
+<?php
+$stmt_file = $pdo->prepare("SELECT file_name, saved_name FROM file WHERE post_id = ?");
+$stmt_file->execute([$post_id]);
+$files = $stmt_file->fetchAll();
 
+if ($files):
+    foreach ($files as $file):
+        $download_url = "uploads/" . urlencode($file['saved_name']);
+        echo "<p><a href=\"$download_url\" download>" . htmlspecialchars($file['file_name']) . "</a></p>";
+    endforeach;
+else:
+    echo "<p>첨부된 파일이 없습니다.</p>";
+endif;
+?>
+<!---->
     <!-- 댓글 작성 폼 -->
     <h3>💬 댓글 작성</h3>
     <form id="comment-form">

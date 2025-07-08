@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { //현재 HTTP요청 방식을 나�
         $error = '제목과 내용을 모두 입력해 주세요.'; // 조건 만족시 에러 메시지 출력
     } else { // 모두 정상적으로 내용이 입력되었다면
         try { //에러 발생해도 계속 진행
+            $pdo->beginTransaction();
+
             $stmt = $pdo->query("SELECT MAX(post_id) AS max_id FROM post"); // post테이블에서 가장 큰 post_id 값을 구해 가장 큰 게시글번호를 가져옴
             $row = $stmt->fetch(); // 위 코드에서 가져온 결과를 한 줄 가져와 $row에 담는다
             $new_post_id = $row['max_id'] + 1; // 마지막 글 번호에 +1해서 새 글 번호를 만들기
@@ -31,6 +33,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { //현재 HTTP요청 방식을 나�
 
             $stmt2 = $pdo->prepare("INSERT INTO content (block_type, content, post_id) VALUES ('text', ?, ?)"); // content 테이블에 새 데이터 추가 준비, block_type은 text로 고정
             $stmt2->execute([$body, $new_post_id]); // 위 쿼리에서 비워둔 ?에 두 값 추가 후 실행
+
+            if (isset($_FILES['upload_file']) && $_FILES['upload_file']['error'] === UPLOAD_ERR_OK) { // 사용자가 파일 업로드했는지 확인
+                $file = $_FILES['upload_file']; //$_FILES['upload_file'] 배열을 $file 변수에 저장
+                $original_name = basename($file['name']); // 업로드된 파일의 경로를 자른 원래 파일 이름만 잘라줌
+                $saved_name = uniqid() . "_" . $original_name; //저장할 파일 이름 제작, 같은 이름이 여러번 업로드 되어도 덮어쓰지 방지
+                $upload_dir = __DIR__ . '/uploads/'; //업로드 파일을 저장할 폴더 경로
+
+                if (!is_dir($upload_dir)) { // uploads 폴더가 존재하지 않으면
+                    mkdir($upload_dir, 0755, true); // 새 폴더 제작
+                }
+
+                move_uploaded_file($file['tmp_name'], $upload_dir . $saved_name); // 임시로 저장된 업로드 파일을 임시 경로->실제 서버 저장 경로로 옮겨줌
+
+                $stmt3 = $pdo->prepare("INSERT INTO file (file_name, saved_name, post_id) VALUES (?, ?, ?)"); // file 테이블에 정보 추가 준비
+                $stmt3->execute([$original_name, $saved_name, $new_post_id]); // 정보 추가
+            }
+
+            $pdo->commit(); // 지금까지 실행한 DB 작업들을 완전히 저장
 
             $success = '✅ 글이 성공적으로 작성되었습니다!'; // 글 저장 끝난 후 success변수에 문장을 담아 성공메시지 보여줌
         } catch (PDOException $e) { // try()블록에서 오류 발생시 catch(여기)로 이동
@@ -57,11 +77,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { //현재 HTTP요청 방식을 나�
         <p style="color: green;"><?php echo htmlspecialchars($success); ?></p> <!-- 초록 글씨로 메시지 보여줌 -->
     <?php endif; ?><!-- if 조건문 닫기 -->
 
-    <form method="post" action="create_post.php"><!-- 데이터 보낼 방식 설정, 데이터 처리할 php파일 경로 -->
+    <form method="post" action="create_post.php" enctype="multipart/form-data"><!-- 데이터 보낼 방식 설정, 데이터 처리할 php파일 경로 +파일 데이터 전송을 위해 쪼개서 보내는 형식 -->
         <p>제목: <input type="text" name="title" required></p><!-- 한 줄짜리 텍스트 입력창에 제목 작성가능, 입력없으면 제출 불가 -->
         <p>내용:<br> <!-- 본문 입력창을 표시하는 글씨 -->
             <textarea name="body" rows="10" cols="50" required></textarea><!-- 긴 텍스트 박스에 10높이, 50글자 너비, 입력없으면 제출 불가 -->
         </p>
+        <p>파일 첨부: <input type="file" name="upload_file"></p> <!-- 파일첨부 버튼 추가 -->
         <p><button type="submit">작성하기</button></p> <!-- 작성하기 버튼, 클릭시 위에 from 내용을 서버로 전송 -->
     </form>
 

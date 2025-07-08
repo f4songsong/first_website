@@ -1,0 +1,9 @@
+CREATE TABLE `file` (
+  `file_id` INT NOT NULL AUTO_INCREMENT,
+  `file_name` VARCHAR(255) NOT NULL,
+  `saved_name` VARCHAR(255) NOT NULL,
+  `post_id` INT NOT NULL,
+  `uploaded_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`file_id`),
+  FOREIGN KEY (`post_id`) REFERENCES `post` (`post_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

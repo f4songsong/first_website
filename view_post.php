@@ -12,7 +12,7 @@ $post_id = (int)$_GET['id'];
 
 try {
     // 2. post 테이블에서 제목 가져오기
-    $stmt = $pdo->prepare("SELECT post_title FROM post WHERE post_id = ?");
+    $stmt = $pdo->prepare("SELECT post_title, users_id FROM post WHERE post_id = ?");
     $stmt->execute([$post_id]);
     $post = $stmt->fetch();
 
@@ -47,6 +47,15 @@ try {
 
     <!-- 글 제목 -->
     <h2><?php echo htmlspecialchars($post['post_title']); ?></h2>
+
+    <h2><?php echo htmlspecialchars($post['post_title']); ?></h2>
+
+    <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $post['users_id']): ?>
+        <p>
+            <a href="delete_post.php?post_id=<?php echo $post_id; ?>" 
+            onclick="return confirm('정말 이 글을 삭제하시겠습니까?')">🗑️ 게시글 삭제</a>
+        </p>
+    <?php endif; ?>
 
     <!-- 본문 내용 출력 -->
     <?php if ($contents): ?>

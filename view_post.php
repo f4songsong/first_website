@@ -99,7 +99,7 @@ endif;
     <?php
     try {
         $stmt = $pdo->prepare("
-            SELECT c.content, c.created_at, u.users_name
+            SELECT c.comment_id, c.content, c.created_at, c.users_id, u.users_name
             FROM comment c
             JOIN users u ON c.users_id = u.users_id
             WHERE c.post_id = ? AND c.deleted_at IS NULL
@@ -115,6 +115,12 @@ endif;
                     <strong><?php echo htmlspecialchars($comment['users_name']); ?></strong>: 
                     <?php echo nl2br(htmlspecialchars($comment['content'])); ?>
                     <small>(<?php echo $comment['created_at']; ?>)</small>
+
+                    <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $comment['users_id']): ?>
+                        <a href="delete_comment.php?comment_id=<?php echo $comment['comment_id']; ?>&post_id=<?php echo $post_id; ?>"
+                        onclick="return confirm('댓글을 삭제하시겠습니까?')">🗑️ 삭제</a>
+                    <?php endif; ?>
+                    
                 </p>
     <?php
             endforeach;

@@ -48,8 +48,6 @@ try {
     <!-- 글 제목 -->
     <h2><?php echo htmlspecialchars($post['post_title']); ?></h2>
 
-    <h2><?php echo htmlspecialchars($post['post_title']); ?></h2>
-
     <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $post['users_id']): ?>
         <p>
             <a href="delete_post.php?post_id=<?php echo $post_id; ?>" 

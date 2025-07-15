@@ -3,12 +3,12 @@
 session_start();
 require_once 'PHP+DB.php';
 
-// 1. URL 파라미터 검사
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+// 1. URL 파라미터 검사->SQL Injection 공격 위험 감소
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) { // $_GET['id'] 값이 존재하지 않거나 숫자가 아닐 경우(참) -> id 안전한지 아닌지 확인
     echo "잘못된 접근입니다.";
     exit;
 }
-$post_id = (int)$_GET['id'];
+$post_id = (int)$_GET['id']; // $_GET['id']을 정수로 변환 후 변수에 저장
 
 try {
     // 2. post 테이블에서 제목 가져오기
@@ -65,8 +65,9 @@ try {
     <?php endif; ?>
 
     <p><a href="index.php">← 목록으로 돌아가기</a></p>
+
     <!---->
-    <h3>📎 첨부 파일</h3>
+ <h3>📎 첨부 파일</h3>
 <?php
 $stmt_file = $pdo->prepare("SELECT file_name, saved_name FROM file WHERE post_id = ?");
 $stmt_file->execute([$post_id]);
@@ -74,14 +75,31 @@ $files = $stmt_file->fetchAll();
 
 if ($files):
     foreach ($files as $file):
-        $download_url = "uploads/" . urlencode($file['saved_name']);
-        echo "<p><a href=\"$download_url\" download>" . htmlspecialchars($file['file_name']) . "</a></p>";
+        $file_name = htmlspecialchars($file['file_name']);
+        $saved_name = urlencode($file['saved_name']);
+        $file_url = "uploads/" . $saved_name;
+
+        // 확장자 추출
+        $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+        $image_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+
+        if (in_array($ext, $image_exts)) {
+            // 이미지라면 미리보기로 표시
+            echo "<div style='margin-bottom:10px;'>
+                    <img src=\"$file_url\" alt=\"$file_name\" style=\"max-width:100%; height:auto; border:1px solid #ccc; border-radius:4px;\">
+                  </div>";
+        } else {
+            // 그 외 파일은 다운로드 링크로
+            echo "<p><a href=\"$file_url\" download>$file_name</a></p>";
+        }
     endforeach;
 else:
     echo "<p>첨부된 파일이 없습니다.</p>";
 endif;
 ?>
+
 <!---->
+
     <!-- 댓글 작성 폼 -->
     <h3>💬 댓글 작성</h3>
     <form id="comment-form">
@@ -121,7 +139,8 @@ endif;
                     
                 </p>
     <?php
-            endforeach;
+            endforeach; // foreach 끝
+
         else:
             echo "<p>작성된 댓글이 없습니다.</p>";
         endif;

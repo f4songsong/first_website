@@ -32,23 +32,24 @@ $offset = ($page - 1) * $perPage;
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>대파 게시판 메인</title>
+    <title>🦎대파 게시판 메인🦖</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>📋대파 게시판 메인</h2>
+    <h2>🦎대파 게시판 메인🐸</h2>
 
     <!-- 로그인 상태에 따른 화면 -->
     <?php if (isset($_SESSION['user_id'])): ?>
         <p>👋 안녕하세요, <?php echo htmlspecialchars($_SESSION['user_name']); ?>님!</p>
         <p>
-            <a href="create_post.php">✏️ 글 작성</a> |
-            <a href="mypage.php">👤 마이페이지</a> |
-            <a href="logout.php">🚪 로그아웃</a>
+            <a href="create_post.php" class="btn">✏️ 글 작성</a> |
+            <a href="mypage.php" class="btn">👤 마이페이지</a> |
+            <a href="logout.php" class="btn">🚪 로그아웃</a>
         </p>
     <?php else: ?>
         <p>
-            <a href="login.php">🔐 로그인</a> |
-            <a href="register.php">📝 회원가입</a>
+            <a href="login.php" class="btn">🔐 로그인</a> |
+            <a href="register.php" class="btn">📝 회원가입</a>
         </p>
     <?php endif; ?>
 
@@ -56,6 +57,7 @@ $offset = ($page - 1) * $perPage;
 
     <!-- 글 목록 출력 -->
     <h3>📝 글 목록</h3>
+    <div class="post">
     <?php
     try {
         // 현재 페이지 글만 가져오기 (최신글 순)
@@ -64,6 +66,8 @@ $offset = ($page - 1) * $perPage;
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
+        $font =0;
+        $colorClasses = ['box-red', 'box-orange', 'box-yellow', 'box-green', 'box-blue'];
 
         // 게시물 번호는 전체 글 개수에서 (현재 페이지 시작 번호 + 반복 횟수)로 계산
         $startNumber = $totalPosts - $offset;
@@ -72,13 +76,17 @@ $offset = ($page - 1) * $perPage;
             $post_id = $row['post_id'];
             $title = htmlspecialchars($row['post_title']);
             $date = $row['created_at'];
+            
+            $className = $colorClasses[$font % count($colorClasses)];
 
-            echo "<p>";
+            echo "<div class='post-box $className'>";
             echo "<strong>{$startNumber}</strong>. ";
             echo "<a href='view_post.php?id=$post_id'>$title</a> <small>($date)</small>";
-            echo "</p>";
+            echo "</div>";
 
             $startNumber--;
+            $font++;
+
         }
 
         if ($totalPosts == 0) {
@@ -88,9 +96,11 @@ $offset = ($page - 1) * $perPage;
         echo "⚠️ 글 목록을 불러오는 데 실패했습니다: " . $e->getMessage();
     }
     ?>
+    </div>
 
+    <div class="paging">
     <!-- 페이징 네비게이션 -->
-    <div style="margin-top: 20px;">
+
         <?php if ($page > 1): ?>
             <a href="?page=<?= $page - 1 ?>">◀ 이전</a>
         <?php endif; ?>
@@ -110,6 +120,7 @@ $offset = ($page - 1) * $perPage;
             <a href="?page=<?= $page + 1 ?>">다음 ▶</a>
         <?php endif; ?>
     </div>
+
 </body>
 </html>
 

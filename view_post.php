@@ -89,7 +89,7 @@ if ($files):
                     <img src=\"$file_url\" alt=\"$file_name\" style=\"max-width:100%; height:auto; border:1px solid #ccc; border-radius:4px;\">
                   </div>";
         } else {
-            // 그 외 파일은 다운로드 링크로
+            // 그 외 파일은 다운로드 링크
             echo "<p><a href=\"$file_url\" download>$file_name</a></p>";
         }
     endforeach;

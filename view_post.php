@@ -42,19 +42,21 @@ try {
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($post['post_title']); ?></title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <!-- 글 제목 -->
-    <h2><?php echo htmlspecialchars($post['post_title']); ?></h2>
+    <h2>👽<?php echo htmlspecialchars($post['post_title']); ?>👽</h2>
 
     <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $post['users_id']): ?>
         <p>
             <a href="delete_post.php?post_id=<?php echo $post_id; ?>" 
-            onclick="return confirm('정말 이 글을 삭제하시겠습니까?')">🗑️ 게시글 삭제</a>
+            onclick="return confirm('정말 이 글을 삭제하시겠습니까?')">🦠 게시글 삭제</a>
         </p>
     <?php endif; ?>
-
+    
+    <div class="post">
     <!-- 본문 내용 출력 -->
     <?php if ($contents): ?>
         <?php foreach ($contents as $content): ?>
@@ -63,11 +65,13 @@ try {
     <?php else: ?>
         <p>내용이 없습니다.</p>
     <?php endif; ?>
+    </div>
 
-    <p><a href="index.php">← 목록으로 돌아가기</a></p>
+
+    <p><a href="index.php">🐍 목록으로 돌아가기</a></p>
 
     <!---->
- <h3>📎 첨부 파일</h3>
+ <h3>🦕 첨부 파일</h3>
 <?php
 $stmt_file = $pdo->prepare("SELECT file_name, saved_name FROM file WHERE post_id = ?");
 $stmt_file->execute([$post_id]);
@@ -85,8 +89,8 @@ if ($files):
 
         if (in_array($ext, $image_exts)) {
             // 이미지라면 미리보기로 표시
-            echo "<div style='margin-bottom:10px;'>
-                    <img src=\"$file_url\" alt=\"$file_name\" style=\"max-width:100%; height:auto; border:1px solid #ccc; border-radius:4px;\">
+            echo "<div  class='image-preview'>
+                    <img src=\"$file_url\" alt=\"$file_name\">
                   </div>";
         } else {
             // 그 외 파일은 다운로드 링크로
@@ -99,19 +103,20 @@ endif;
 ?>
 
 <!---->
-
+    <div class="btn">
     <!-- 댓글 작성 폼 -->
-    <h3>💬 댓글 작성</h3>
+    <h3>🐊 댓글 작성</h3>
     <form id="comment-form">
         <textarea name="comment" rows="4" cols="50" placeholder="댓글을 입력하세요..." required></textarea>
         <input type="hidden" name="post_id" value="<?php echo $post_id; ?>">
         <p><button type="submit">댓글 작성</button></p>
     </form>
+    </div>
 
     <p id="comment-message"></p>
 
     <!-- 댓글 목록 출력 -->
-    <h3>🗨️ 댓글 목록</h3>
+    <h3>🦗 댓글 목록</h3>
     <?php
     try {
         $stmt = $pdo->prepare("

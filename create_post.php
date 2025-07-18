@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { //현재 HTTP요청 방식을 나�
 <head> <!-- 웹페이지 정보 설정 -->
     <meta charset="UTF-8"> <!-- 글자 인코딩 UTF-8로 설정 -->
     <title>글 작성</title> <!-- 브라우저 탭에 보이는 페이지 제목 -->
+    <link rel="stylesheet" href="style.css">
 </head><!-- 웹페이지 정보 설정 끝 -->
 <body><!-- 실제로 화면 출력 내용 담는 부분 -->
     <h2>✏️ 글 작성</h2><!-- 가운데 글 제목으로 보여짐 -->

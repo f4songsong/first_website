@@ -76,6 +76,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <title>마이페이지</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h2>👤 마이페이지</h2>

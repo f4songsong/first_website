@@ -12,7 +12,7 @@ $post_id = (int)$_GET['id']; // $_GET['id']을 정수로 변환 후 변수에 �
 
 try {
     // 2. post 테이블에서 제목 가져오기
-    $stmt = $pdo->prepare("SELECT post_title, users_id FROM post WHERE post_id = ?");
+    $stmt = $pdo->prepare("SELECT post_id, post_title, users_id FROM post WHERE post_id = ?");
     $stmt->execute([$post_id]);
     $post = $stmt->fetch();
 
@@ -69,6 +69,15 @@ try {
 
 
     <p><a href="index.php">🐍 목록으로 돌아가기</a></p>
+ 
+    <!-- 수정 버튼-->
+    <?php if (
+        isset($_SESSION['user_id'], $post['users_id'], $post['post_id']) &&
+        $_SESSION['user_id'] === $post['users_id']
+    ): ?>
+        <a href="edit_post.php?id=<?= (int)$post['post_id'] ?>">✏️ 수정</a>
+    <?php endif; ?>
+
 
     <!---->
  <h3>🦕 첨부 파일</h3>
@@ -101,6 +110,7 @@ else:
     echo "<p>첨부된 파일이 없습니다.</p>";
 endif;
 ?>
+
 
 <!---->
     <div class="btn">
@@ -140,6 +150,7 @@ endif;
                     <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $comment['users_id']): ?>
                         <a href="delete_comment.php?comment_id=<?php echo $comment['comment_id']; ?>&post_id=<?php echo $post_id; ?>"
                         onclick="return confirm('댓글을 삭제하시겠습니까?')">🗑️ 삭제</a>
+                        <a href="edit_comment.php?comment_id=<?= (int)$comment['comment_id'] ?>&post_id=<?= (int)$post_id ?>">✏️ 수정</a>
                     <?php endif; ?>
                     
                 </p>
